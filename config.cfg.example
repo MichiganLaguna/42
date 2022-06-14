@@ -1,5 +1,5 @@
 [Bot]
-token = your token
+token = placeholder
 prefix = $$
 [Logging]
 log_dir = ./logs
@@ -11,5 +11,8 @@ default_language = ${Language:english}
 english = english.cfg
 french = french.cfg
 [Ressources]
-pasta_image = C:/Users/noaxe/Downloads/huh.png
+pasta_image = placeholder
 pasta_image_name = img.png
+color_0 = 0xA9A0CF
+color_1 = 0x14A346
+color_2 = 0xB10606

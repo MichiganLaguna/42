@@ -2,6 +2,7 @@
 import os
 import logging
 from configparser import ConfigParser, ExtendedInterpolation
+from typing import Union
 from time import time
 import aiohttp
 import discord
@@ -33,43 +34,44 @@ logger.addHandler(handler)
 TOKEN = CONFIG.get("Bot", "token")
 PREFIX = CONFIG.get("Bot", "prefix")
 
-
 class MyClient(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    async def on_ready(self):
+    async def on_ready(self) -> None:
         """Prints when the bot is ready."""
         print(f"Logged in as {self.user} (ID: {self.user.id})")
-        
-    async def create_invite(self, guild):
-        """Creates an invite for the given channel."""
-        for channel in guild.channels:
-            if isinstance(channel, discord.TextChannel):
-                return await channel.create_invite(max_age=0, max_uses=0)
-            
+
+    async def create_invite(self, guild: Union[discord.Guild, discord.ChannelType], *args, **kwargs) -> discord.Invite:
+        """Creates an invite for the given guild redirecting to the first text channel or to the channel submited."""
+        if isinstance(guild, discord.ChannelType):
+            _channel = guild
+        elif isinstance(guild, discord.Guild):
+            for channel in guild.channels:
+                if isinstance(channel, discord.TextChannel):
+                    _channel = channel
+        else:
+            return None
+        return await _channel.create_invite(*args, **kwargs)
 
     async def on_message(self, message):
         """Prints when a message is sent."""
         if message.author == self.user:
             return
 
-        if message.content.startswith(f"{PREFIX}{VARIABLE.get('OnMessageQ', 'hello')}"):
-            await message.channel.send(f"{PREFIX}{VARIABLE.get('OnMessageA', 'hello')}")
-
         if message.content.startswith(f"{PREFIX}{VARIABLE.get('OnMessageQ', 'pasta')}") or message.content.startswith(f"{PREFIX}{VARIABLE.get('OnMessageQ', 'pasta_1')}"):
             img = f"{CONFIG.get('Ressources', 'pasta_image_name')}"
             file = discord.File(CONFIG.get("Ressources", "pasta_image"), filename=img)
-            embed = discord.Embed(color=0x00ff00)
+            embed = discord.Embed(color=int(CONFIG.get("Ressources", "color_0"), 0))
             embed.set_image(url=f"attachment://{img}")
             await message.author.send(embed=embed, file=file)
-            
+
         if message.content.startswith(f"{PREFIX}{VARIABLE.get('OnMessageQ', 'whereareyou')}"):
             await message.channel.send(f"{VARIABLE.get('OnMessageA', 'whereareyou')}")
             for guild in self.guilds:
                 invite = await self.create_invite(guild) # Creates an invite for the guild
                 await message.channel.send(invite.url) # Sends the invite to the channel
-            
+
         if message.content.startswith(f"{PREFIX}cat"):
             async with aiohttp.ClientSession() as session:
                 async with session.get("https://aws.random.cat/meow") as resp:
