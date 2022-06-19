@@ -1,25 +1,43 @@
 """Discord bot for the server 42."""
-from datetime import datetime
-import pytz
+import os
+import logging
+import logging.handlers
 import discord
-from _logger import custom_logger
 import _config
-import _client
+import __logging__ as log
 
-logger_name = datetime.now(tz=pytz.utc).strftime("%Y-%m-%d")
-custom_logger(logger_name)
-_= _config.custom_config()
-config = _["config"]
-variable = _["variable"]
+LOG_DIR_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
+if not os.path.exists(LOG_DIR_PATH):
+    os.makedirs(LOG_DIR_PATH)
+logger = logging.getLogger("discord")
+handler = log.TimedRotatingFileHandler(LOG_DIR_PATH)
+formatter = log.UTCFormatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
 
-bot_token = config.get("Bot", "token")
-bot_prefix = config.get("Bot", "prefix")
+class MyClient(discord.Client):
+    async def on_ready(self):
+        print(f"Logged in as : {self.user}")
 
+    async def on_message(self, message):
+        if message.author == self.user:
+            return
+
+        if message.content.startswith("!hello"):
+            await message.channel.send("Hello!")
+
+config = _config.custom_config()
+BOT_TOKEN = config.get("bot", "token")
+PREFIX = config.get("bot", "prefix")
 activity = discord.Activity(
     name="How to make good spaghetti",
     type=discord.ActivityType.competing,
 )
-client = _client.MyClient(activity=activity, intents=discord.Intents.default())
+intents = discord.Intents.all()
+
+client = MyClient(intents=intents, activity=activity)
+# .strftime("%Y-%m-%d")
 
 
-client.run(bot_token)
+client.run(BOT_TOKEN)
