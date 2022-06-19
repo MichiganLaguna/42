@@ -1,3 +1,3 @@
-config.cfg
+__config__.py
 *.pyc
 *.log
