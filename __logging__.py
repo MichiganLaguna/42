@@ -23,7 +23,7 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
     Modified so that the filename is always the current date utc.
     and doc_path is the path directory of the log file.
     """
-    def __init__(self, doc_path:os.PathLike, when:str ='h', interval:int=1, backupCount=0,
+    def __init__(self, doc_path:os.PathLike, when:str ='D', interval:int=1, backupCount=0,
                  encoding=None, delay=False, utc=False, atTime=None,
                  errors=None):
         encoding = io.text_encoding(encoding)
@@ -49,15 +49,15 @@ class TimedRotatingFileHandler(BaseRotatingHandler):
         # will work.
         if self.when == 'S':
             self.interval = 1 # one second
-            self.suffix = "%Y-%m-%d_%H-%M-%S"
+            self.suffix = "%Y-%m-%dT%H-%M-%S"
             self.extMatch = r"^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}(\.\w+)?$"
         elif self.when == 'M':
             self.interval = 60 # one minute
-            self.suffix = "%Y-%m-%d_%H-%M"
+            self.suffix = "%Y-%m-%dT%H-%M"
             self.extMatch = r"^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}(\.\w+)?$"
         elif self.when == 'H':
             self.interval = 60 * 60 # one hour
-            self.suffix = "%Y-%m-%d_%H"
+            self.suffix = "%Y-%m-%dT%H"
             self.extMatch = r"^\d{4}-\d{2}-\d{2}_\d{2}(\.\w+)?$"
         elif self.when == 'D' or self.when == 'MIDNIGHT':
             self.interval = 60 * 60 * 24 # one day
